@@ -15,7 +15,7 @@ type requestBody struct {
 }
 
 func HelloHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Hello, World!")
+	fmt.Fprintf(w, "Hello, %s", Message)
 }
 
 func MessageHandler(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +30,6 @@ func MessageHandler(w http.ResponseWriter, r *http.Request) {
 
 	Message = msg.Message
 
-	fmt.Fprintf(w, "Hello, %s", Message)
 }
 
 func main() {
