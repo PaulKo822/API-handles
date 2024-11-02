@@ -1,10 +1,10 @@
 package main
 
 import (
-	"Progect1/internal/database"
-	"Progect1/internal/handlers"
-	"Progect1/internal/taskService"
 	"net/http"
+	"pet_project_1_etap/internal/database"
+	"pet_project_1_etap/internal/handlers"
+	"pet_project_1_etap/internal/taskService"
 
 	"github.com/gorilla/mux"
 )

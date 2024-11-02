@@ -1,9 +1,9 @@
 package handlers
 
 import (
-	"Progect1/internal/taskService"
 	"encoding/json"
 	"net/http"
+	"pet_project_1_etap/internal/taskService"
 
 	"strconv"
 
