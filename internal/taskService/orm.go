@@ -6,5 +6,6 @@ import (
 
 type Task struct {
 	gorm.Model
-	Text string `json:"text"` // Наш сервер будет ожидать json c полем text
+	Text   string `json:"text"`
+	IsDone bool   `json:"is_done,omitempty"`
 }
