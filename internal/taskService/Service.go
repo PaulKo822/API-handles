@@ -1,4 +1,4 @@
-package taskService
+package taskservice
 
 type TaskService struct {
 	repo TaskRepository

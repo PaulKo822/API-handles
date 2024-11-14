@@ -2,24 +2,24 @@ package handlers
 
 import (
 	"context"
-	"pet_project_1_etap/internal/taskService"
+	"pet_project_1_etap/internal/taskservice"
 	"pet_project_1_etap/internal/web/tasks"
 )
 
 type Handler struct {
-	Service *taskService.TaskService
+	Service *taskservice.TaskService
 }
 
 // Нужна для создания структуры Handler на этапе инициализации приложения
 
-func NewHandler(service *taskService.TaskService) *Handler {
+func NewHandler(service *taskservice.TaskService) *Handler {
 	return &Handler{
 		Service: service,
 	}
 }
 
 // GetTasks implements tasks.StrictServerInterface.
-func (h *Handler) GetTasks(ctx context.Context, request tasks.GetTasksRequestObject) (tasks.GetTasksResponseObject, error) {
+func (h *Handler) GetTasks(_ context.Context, _ tasks.GetTasksRequestObject) (tasks.GetTasksResponseObject, error) {
 	// Получение всех задач из сервиса
 	allTasks, err := h.Service.GetAllTasks()
 	if err != nil {
@@ -45,11 +45,11 @@ func (h *Handler) GetTasks(ctx context.Context, request tasks.GetTasksRequestObj
 }
 
 // PostTasks implements tasks.StrictServerInterface.
-func (h *Handler) PostTasks(ctx context.Context, request tasks.PostTasksRequestObject) (tasks.PostTasksResponseObject, error) {
+func (h *Handler) PostTasks(_ context.Context, request tasks.PostTasksRequestObject) (tasks.PostTasksResponseObject, error) {
 	// Распаковываем тело запроса напрямую, без декодера!
 	taskRequest := request.Body
 	// Обращаемся к сервису и создаем задачу
-	taskToCreate := taskService.Task{
+	taskToCreate := taskservice.Task{
 		Text:   *taskRequest.Task,
 		IsDone: *taskRequest.IsDone,
 	}
@@ -69,14 +69,15 @@ func (h *Handler) PostTasks(ctx context.Context, request tasks.PostTasksRequestO
 }
 
 // DeleteTasksId implements tasks.StrictServerInterface.
-func (h *Handler) DeleteTasksId(ctx context.Context, request tasks.DeleteTasksIdRequestObject) (tasks.DeleteTasksIdResponseObject, error) {
-	taskId := uint(request.Id)
+func (h *Handler) DeleteTasksID(_ context.Context, request tasks.DeleteTasksIdRequestObject) (tasks.DeleteTasksIdResponseObject, error) {
+	taskID := uint(request.Id)
 
-	err := h.Service.DeleteTaskByID(taskId)
+	err := h.Service.DeleteTaskByID(taskID)
 
 	if err != nil {
 		return nil, err
 	}
+
 	response := tasks.DeleteTasksId205Response{
 		Message: "The task was successfully deleted",
 	}
@@ -85,19 +86,19 @@ func (h *Handler) DeleteTasksId(ctx context.Context, request tasks.DeleteTasksId
 }
 
 // PatchTasksId implements tasks.StrictServerInterface.
-func (h *Handler) PatchTasksId(ctx context.Context, request tasks.PatchTasksIdRequestObject) (tasks.PatchTasksIdResponseObject, error) {
+func (h *Handler) PatchTasksID(_ context.Context, request tasks.PatchTasksIdRequestObject) (tasks.PatchTasksIdResponseObject, error) {
 
-	taskId := uint(request.Id)
+	taskID := uint(request.Id)
 
 	// Распаковываем тело запроса напрямую, без декодера!
 	taskRequest := request.Body
 	// Обращаемся к сервису и создаем задачу
-	taskToCreate := taskService.Task{
+	taskToCreate := taskservice.Task{
 		Text:   *taskRequest.Task,
 		IsDone: *taskRequest.IsDone,
 	}
 
-	updatedTask, err := h.Service.UpdateTaskByID(taskId, taskToCreate)
+	updatedTask, err := h.Service.UpdateTaskByID(taskID, taskToCreate)
 
 	if err != nil {
 		return nil, err

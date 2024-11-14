@@ -4,7 +4,7 @@ import (
 	"log"
 	"pet_project_1_etap/internal/database"
 	"pet_project_1_etap/internal/handlers"
-	"pet_project_1_etap/internal/taskService"
+	"pet_project_1_etap/internal/taskservice"
 	"pet_project_1_etap/internal/web/tasks"
 
 	"github.com/labstack/echo/v4"
@@ -13,10 +13,13 @@ import (
 
 func main() {
 	database.InitDB()
-	database.DB.AutoMigrate(&taskService.Task{})
+	err := database.DB.AutoMigrate(&taskservice.Task{})
+	if err != nil {
+		log.Fatalf("Ошибка при миграции базы данных: %v", err)
+	}
 
-	repo := taskService.NewTaskRepository(database.DB)
-	service := taskService.NewService(repo)
+	repo := taskservice.NewTaskRepository(database.DB)
+	service := taskservice.NewService(repo)
 
 	handler := handlers.NewHandler(service)
 

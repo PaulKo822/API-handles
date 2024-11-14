@@ -43,10 +43,10 @@ type ServerInterface interface {
 	PostTasks(ctx echo.Context) error
 	// Delete task
 	// (DELETE /tasks/{id})
-	DeleteTasksId(ctx echo.Context, id int) error
+	DeleteTasksID(ctx echo.Context, id int) error
 	// Update an existing task by ID
 	// (PATCH /tasks/{id})
-	PatchTasksId(ctx echo.Context, id int) error
+	PatchTasksID(ctx echo.Context, id int) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -73,7 +73,7 @@ func (w *ServerInterfaceWrapper) PostTasks(ctx echo.Context) error {
 }
 
 // DeleteTasksId converts echo context to params.
-func (w *ServerInterfaceWrapper) DeleteTasksId(ctx echo.Context) error {
+func (w *ServerInterfaceWrapper) DeleteTasksID(ctx echo.Context) error {
 	var err error
 	// ------------- Path parameter "id" -------------
 	var id int
@@ -84,12 +84,12 @@ func (w *ServerInterfaceWrapper) DeleteTasksId(ctx echo.Context) error {
 	}
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.DeleteTasksId(ctx, id)
+	err = w.Handler.DeleteTasksID(ctx, id)
 	return err
 }
 
 // PatchTasksId converts echo context to params.
-func (w *ServerInterfaceWrapper) PatchTasksId(ctx echo.Context) error {
+func (w *ServerInterfaceWrapper) PatchTasksID(ctx echo.Context) error {
 	var err error
 	// ------------- Path parameter "id" -------------
 	var id int
@@ -100,7 +100,7 @@ func (w *ServerInterfaceWrapper) PatchTasksId(ctx echo.Context) error {
 	}
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.PatchTasksId(ctx, id)
+	err = w.Handler.PatchTasksID(ctx, id)
 	return err
 }
 
@@ -134,8 +134,8 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 
 	router.GET(baseURL+"/tasks", wrapper.GetTasks)
 	router.POST(baseURL+"/tasks", wrapper.PostTasks)
-	router.DELETE(baseURL+"/tasks/:id", wrapper.DeleteTasksId)
-	router.PATCH(baseURL+"/tasks/:id", wrapper.PatchTasksId)
+	router.DELETE(baseURL+"/tasks/:id", wrapper.DeleteTasksID)
+	router.PATCH(baseURL+"/tasks/:id", wrapper.PatchTasksID)
 
 }
 
@@ -220,10 +220,10 @@ type StrictServerInterface interface {
 	PostTasks(ctx context.Context, request PostTasksRequestObject) (PostTasksResponseObject, error)
 	// Delete task
 	// (DELETE /tasks/{id})
-	DeleteTasksId(ctx context.Context, request DeleteTasksIdRequestObject) (DeleteTasksIdResponseObject, error)
+	DeleteTasksID(ctx context.Context, request DeleteTasksIdRequestObject) (DeleteTasksIdResponseObject, error)
 	// Update an existing task by ID
 	// (PATCH /tasks/{id})
-	PatchTasksId(ctx context.Context, request PatchTasksIdRequestObject) (PatchTasksIdResponseObject, error)
+	PatchTasksID(ctx context.Context, request PatchTasksIdRequestObject) (PatchTasksIdResponseObject, error)
 }
 
 type StrictHandlerFunc = strictecho.StrictEchoHandlerFunc
@@ -291,13 +291,13 @@ func (sh *strictHandler) PostTasks(ctx echo.Context) error {
 }
 
 // DeleteTasksId operation middleware
-func (sh *strictHandler) DeleteTasksId(ctx echo.Context, id int) error {
+func (sh *strictHandler) DeleteTasksID(ctx echo.Context, id int) error {
 	var request DeleteTasksIdRequestObject
 
 	request.Id = id
 
 	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.DeleteTasksId(ctx.Request().Context(), request.(DeleteTasksIdRequestObject))
+		return sh.ssi.DeleteTasksID(ctx.Request().Context(), request.(DeleteTasksIdRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
 		handler = middleware(handler, "DeleteTasksId")
@@ -316,7 +316,7 @@ func (sh *strictHandler) DeleteTasksId(ctx echo.Context, id int) error {
 }
 
 // PatchTasksId operation middleware
-func (sh *strictHandler) PatchTasksId(ctx echo.Context, id int) error {
+func (sh *strictHandler) PatchTasksID(ctx echo.Context, id int) error {
 	var request PatchTasksIdRequestObject
 
 	request.Id = id
@@ -328,7 +328,7 @@ func (sh *strictHandler) PatchTasksId(ctx echo.Context, id int) error {
 	request.Body = &body
 
 	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.PatchTasksId(ctx.Request().Context(), request.(PatchTasksIdRequestObject))
+		return sh.ssi.PatchTasksID(ctx.Request().Context(), request.(PatchTasksIdRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
 		handler = middleware(handler, "PatchTasksId")

@@ -1,0 +1,6 @@
+linters:
+  enable:
+    - revive
+    - errcheck
+    - staticcheck
+    - unused
