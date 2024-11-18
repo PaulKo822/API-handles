@@ -6,20 +6,20 @@ import (
 	"pet_project_1_etap/internal/web/tasks"
 )
 
-type Handler struct {
+type TaskHandler struct {
 	Service *taskservice.TaskService
 }
 
 // Нужна для создания структуры Handler на этапе инициализации приложения
 
-func NewHandler(service *taskservice.TaskService) *Handler {
-	return &Handler{
+func NewTaskHandler(service *taskservice.TaskService) *TaskHandler {
+	return &TaskHandler{
 		Service: service,
 	}
 }
 
 // GetTasks implements tasks.StrictServerInterface.
-func (h *Handler) GetTasks(_ context.Context, _ tasks.GetTasksRequestObject) (tasks.GetTasksResponseObject, error) {
+func (h *TaskHandler) GetTasks(_ context.Context, _ tasks.GetTasksRequestObject) (tasks.GetTasksResponseObject, error) {
 	// Получение всех задач из сервиса
 	allTasks, err := h.Service.GetAllTasks()
 	if err != nil {
@@ -45,7 +45,7 @@ func (h *Handler) GetTasks(_ context.Context, _ tasks.GetTasksRequestObject) (ta
 }
 
 // PostTasks implements tasks.StrictServerInterface.
-func (h *Handler) PostTasks(_ context.Context, request tasks.PostTasksRequestObject) (tasks.PostTasksResponseObject, error) {
+func (h *TaskHandler) PostTasks(_ context.Context, request tasks.PostTasksRequestObject) (tasks.PostTasksResponseObject, error) {
 	// Распаковываем тело запроса напрямую, без декодера!
 	taskRequest := request.Body
 	// Обращаемся к сервису и создаем задачу
@@ -69,7 +69,7 @@ func (h *Handler) PostTasks(_ context.Context, request tasks.PostTasksRequestObj
 }
 
 // DeleteTasksId implements tasks.StrictServerInterface.
-func (h *Handler) DeleteTasksID(_ context.Context, request tasks.DeleteTasksIdRequestObject) (tasks.DeleteTasksIdResponseObject, error) {
+func (h *TaskHandler) DeleteTasksID(_ context.Context, request tasks.DeleteTasksIdRequestObject) (tasks.DeleteTasksIdResponseObject, error) {
 	taskID := uint(request.Id)
 
 	err := h.Service.DeleteTaskByID(taskID)
@@ -86,7 +86,7 @@ func (h *Handler) DeleteTasksID(_ context.Context, request tasks.DeleteTasksIdRe
 }
 
 // PatchTasksId implements tasks.StrictServerInterface.
-func (h *Handler) PatchTasksID(_ context.Context, request tasks.PatchTasksIdRequestObject) (tasks.PatchTasksIdResponseObject, error) {
+func (h *TaskHandler) PatchTasksID(_ context.Context, request tasks.PatchTasksIdRequestObject) (tasks.PatchTasksIdResponseObject, error) {
 
 	taskID := uint(request.Id)
 
