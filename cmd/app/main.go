@@ -38,8 +38,8 @@ func main() {
 	e.Use(middleware.Recover())
 
 	// Прикол для работы в echo. Передаем и регистрируем хендлер в echo
-	strictHandler := tasks.NewStrictHandler(tasksHandler, nil) // тут будет ошибка
-	tasks.RegisterHandlers(e, strictHandler)
+	strictTaskHandler := tasks.NewStrictHandler(tasksHandler, nil) // тут будет ошибка
+	tasks.RegisterHandlers(e, strictTaskHandler)
 
 	strictUserHandler := users.NewStrictHandler(usersHandler, nil) // тут будет ошибка
 	users.RegisterHandlers(e, strictUserHandler)
