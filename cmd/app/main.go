@@ -4,6 +4,7 @@ import (
 	"log"
 	"pet_project_1_etap/internal/database"
 	"pet_project_1_etap/internal/handlers"
+	"pet_project_1_etap/internal/models"
 	"pet_project_1_etap/internal/taskservice"
 	"pet_project_1_etap/internal/userservice"
 	"pet_project_1_etap/internal/web/tasks"
@@ -15,7 +16,7 @@ import (
 
 func main() {
 	database.InitDB()
-	err := database.DB.AutoMigrate(&taskservice.Task{})
+	err := database.DB.AutoMigrate(&models.Task{})
 	if err != nil {
 		log.Fatalf("Ошибка при миграции базы данных: %v", err)
 	}

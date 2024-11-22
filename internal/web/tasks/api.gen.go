@@ -16,15 +16,17 @@ import (
 
 // Task defines model for Task.
 type Task struct {
-	Id     *uint   `json:"id,omitempty"`
+	ID     *uint   `json:"id,omitempty"`
 	IsDone *bool   `json:"is_done,omitempty"`
 	Task   *string `json:"task,omitempty"`
+	UserID *uint   `json:"user_id,omitempty"`
 }
 
 // TaskUpdate defines model for TaskUpdate.
 type TaskUpdate struct {
 	IsDone *bool   `json:"is_done,omitempty"`
 	Task   *string `json:"task,omitempty"`
+	UserID *uint   `json:"user_id,omitempty"`
 }
 
 // PostTasksJSONRequestBody defines body for PostTasks for application/json ContentType.
@@ -180,15 +182,13 @@ type DeleteTasksIdResponseObject interface {
 	VisitDeleteTasksIdResponse(w http.ResponseWriter) error
 }
 
-type DeleteTasksId205Response struct {
+type DeleteTasksId200Response struct {
 	Message string
 }
 
-func (response DeleteTasksId205Response) VisitDeleteTasksIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
+func (response DeleteTasksId200Response) VisitDeleteTasksIdResponse(w http.ResponseWriter) error {
 	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
+	return nil
 }
 
 type PatchTasksIdRequestObject struct {
@@ -200,15 +200,14 @@ type PatchTasksIdResponseObject interface {
 	VisitPatchTasksIdResponse(w http.ResponseWriter) error
 }
 
-type PatchTasksId204Response Task
+type PatchTasksId200Response Task
 
-func (response PatchTasksId204Response) VisitPatchTasksIdResponse(w http.ResponseWriter) error {
+func (response PatchTasksId200Response) VisitPatchTasksIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
-
+	
 	return json.NewEncoder(w).Encode(response)
 }
-
 
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {

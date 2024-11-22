@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"context"
+	"log"
+	"pet_project_1_etap/internal/models"
 	"pet_project_1_etap/internal/userservice"
 	"pet_project_1_etap/internal/web/users"
 )
@@ -19,10 +21,9 @@ func NewUserHandler(service *userservice.UserService) *UserHandler {
 // DeleteUsersId implements users.StrictServerInterface.
 func (u *UserHandler) DeleteUsersID(_ context.Context, request users.DeleteUsersIdRequestObject) (users.DeleteUsersIdResponseObject, error) {
 	userID := uint(request.Id)
-
 	err := u.Service.DeleteUserByID(userID)
-
 	if err != nil {
+		log.Printf("Error deleting user with ID %d: %v", userID, err)
 		return nil, err
 	}
 
@@ -30,6 +31,32 @@ func (u *UserHandler) DeleteUsersID(_ context.Context, request users.DeleteUsers
 		Message: "The user was successfully deleted",
 	}
 
+	return response, nil
+}
+
+// PatchUsersId implements users.StrictServerInterface.
+func (u *UserHandler) PatchUsersID(_ context.Context, request users.PatchUsersIdRequestObject) (users.PatchUsersIdResponseObject, error) {
+	userID := uint(request.Id)
+
+	userRequest := request.Body
+
+	userToCreate := models.User{
+		Email:    *userRequest.Email,
+		Password: *userRequest.Password,
+	}
+
+	updatedUser, err := u.Service.PatchUserByID(userID, userToCreate)
+
+	if err != nil {
+		return nil, err
+	}
+	// создаем структуру респонс
+	response := users.PatchUsersId200Response{
+		ID:       &updatedUser.ID,
+		Email:    &updatedUser.Email,
+		Password: &updatedUser.Password,
+	}
+	// Просто возвращаем респонс!
 	return response, nil
 }
 
@@ -44,7 +71,7 @@ func (u *UserHandler) GetUsers(_ context.Context, _ users.GetUsersRequestObject)
 
 	for _, use := range allUsers {
 		user := users.User{
-			Id:       &use.ID,
+			ID:       &use.ID,
 			Email:    &use.Email,
 			Password: &use.Password,
 		}
@@ -54,37 +81,11 @@ func (u *UserHandler) GetUsers(_ context.Context, _ users.GetUsersRequestObject)
 	return response, nil
 }
 
-// PatchUsersId implements users.StrictServerInterface.
-func (u *UserHandler) PatchUsersID(_ context.Context, request users.PatchUsersIdRequestObject) (users.PatchUsersIdResponseObject, error) {
-	userID := uint(request.Id)
-
-	userRequest := request.Body
-
-	userToCreate := userservice.User{
-		Email:    *userRequest.Email,
-		Password: *userRequest.Password,
-	}
-
-	updatedUser, err := u.Service.PatchUserByID(userID, userToCreate)
-
-	if err != nil {
-		return nil, err
-	}
-	// создаем структуру респонс
-	response := users.PatchUsersId200Response{
-		Id:       &updatedUser.ID,
-		Email:    &updatedUser.Email,
-		Password: &updatedUser.Password,
-	}
-	// Просто возвращаем респонс!
-	return response, nil
-}
-
 // PostUsers implements users.StrictServerInterface.
 func (u *UserHandler) PostUsers(_ context.Context, request users.PostUsersRequestObject) (users.PostUsersResponseObject, error) {
 	userRequest := request.Body
 
-	userCreate := userservice.User{
+	userCreate := models.User{
 		Email:    *userRequest.Email,
 		Password: *userRequest.Password,
 	}
@@ -95,10 +96,25 @@ func (u *UserHandler) PostUsers(_ context.Context, request users.PostUsersReques
 	}
 
 	response := users.PostUsers201JSONResponse{
-		Id:       &createdUser.ID,
+		ID:       &createdUser.ID,
 		Email:    &createdUser.Email,
 		Password: &createdUser.Password,
 	}
+
+	return response, nil
+}
+
+// GetTasksByUserID implements users.StrictServerInterface.
+func (u *UserHandler) GetTasksByUserID(_ context.Context, request users.GetUsersIdRequestObject) (users.GetUsersIdResponseObject, error) {
+	userID := uint(request.Id)
+
+	tasksUser, err := u.Service.GetTasksForUser(userID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	response := users.GetUsersId200JSONResponse(tasksUser)
 
 	return response, nil
 }

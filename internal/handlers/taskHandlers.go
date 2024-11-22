@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"pet_project_1_etap/internal/models"
 	"pet_project_1_etap/internal/taskservice"
 	"pet_project_1_etap/internal/web/tasks"
 )
@@ -16,6 +17,52 @@ func NewTaskHandler(service *taskservice.TaskService) *TaskHandler {
 	return &TaskHandler{
 		Service: service,
 	}
+}
+
+// DeleteTasksId implements tasks.StrictServerInterface.
+func (h *TaskHandler) DeleteTasksID(_ context.Context, request tasks.DeleteTasksIdRequestObject) (tasks.DeleteTasksIdResponseObject, error) {
+	taskID := uint(request.Id)
+
+	err := h.Service.DeleteTaskByID(taskID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	response := tasks.DeleteTasksId200Response{
+		Message: "The task was successfully deleted",
+	}
+
+	return response, nil
+}
+
+// PatchTasksId implements tasks.StrictServerInterface.
+func (h *TaskHandler) PatchTasksID(_ context.Context, request tasks.PatchTasksIdRequestObject) (tasks.PatchTasksIdResponseObject, error) {
+	taskID := uint(request.Id)
+
+	// Распаковываем тело запроса напрямую, без декодера!
+	taskRequest := request.Body
+	// Обращаемся к сервису и создаем задачу
+	taskToCreate := models.Task{
+		Text:   *taskRequest.Task,
+		UserID: *taskRequest.UserID,
+		IsDone: *taskRequest.IsDone,
+	}
+
+	updatedTask, err := h.Service.UpdateTaskByID(taskID, taskToCreate)
+
+	if err != nil {
+		return nil, err
+	}
+	// создаем структуру респонс
+	response := tasks.PatchTasksId200Response{
+		ID:     &updatedTask.ID,
+		Task:   &updatedTask.Text,
+		UserID: &updatedTask.UserID,
+		IsDone: &updatedTask.IsDone,
+	}
+	// Просто возвращаем респонс!
+	return response, nil
 }
 
 // GetTasks implements tasks.StrictServerInterface.
@@ -33,8 +80,9 @@ func (h *TaskHandler) GetTasks(_ context.Context, _ tasks.GetTasksRequestObject)
 	// Заполняем слайс response всеми задачами из БД
 	for _, tsk := range allTasks {
 		task := tasks.Task{
-			Id:     &tsk.ID,
+			ID:     &tsk.ID,
 			Task:   &tsk.Text,
+			UserID: &tsk.UserID,
 			IsDone: &tsk.IsDone,
 		}
 		response = append(response, task)
@@ -49,8 +97,9 @@ func (h *TaskHandler) PostTasks(_ context.Context, request tasks.PostTasksReques
 	// Распаковываем тело запроса напрямую, без декодера!
 	taskRequest := request.Body
 	// Обращаемся к сервису и создаем задачу
-	taskToCreate := taskservice.Task{
+	taskToCreate := models.Task{
 		Text:   *taskRequest.Task,
+		UserID: *taskRequest.UserID,
 		IsDone: *taskRequest.IsDone,
 	}
 	createdTask, err := h.Service.CreateTask(taskToCreate)
@@ -60,54 +109,10 @@ func (h *TaskHandler) PostTasks(_ context.Context, request tasks.PostTasksReques
 	}
 	// создаем структуру респонс
 	response := tasks.PostTasks201JSONResponse{
-		Id:     &createdTask.ID,
+		ID:     &createdTask.ID,
 		Task:   &createdTask.Text,
+		UserID: &createdTask.UserID,
 		IsDone: &createdTask.IsDone,
-	}
-	// Просто возвращаем респонс!
-	return response, nil
-}
-
-// DeleteTasksId implements tasks.StrictServerInterface.
-func (h *TaskHandler) DeleteTasksID(_ context.Context, request tasks.DeleteTasksIdRequestObject) (tasks.DeleteTasksIdResponseObject, error) {
-	taskID := uint(request.Id)
-
-	err := h.Service.DeleteTaskByID(taskID)
-
-	if err != nil {
-		return nil, err
-	}
-
-	response := tasks.DeleteTasksId205Response{
-		Message: "The task was successfully deleted",
-	}
-
-	return response, nil
-}
-
-// PatchTasksId implements tasks.StrictServerInterface.
-func (h *TaskHandler) PatchTasksID(_ context.Context, request tasks.PatchTasksIdRequestObject) (tasks.PatchTasksIdResponseObject, error) {
-
-	taskID := uint(request.Id)
-
-	// Распаковываем тело запроса напрямую, без декодера!
-	taskRequest := request.Body
-	// Обращаемся к сервису и создаем задачу
-	taskToCreate := taskservice.Task{
-		Text:   *taskRequest.Task,
-		IsDone: *taskRequest.IsDone,
-	}
-
-	updatedTask, err := h.Service.UpdateTaskByID(taskID, taskToCreate)
-
-	if err != nil {
-		return nil, err
-	}
-	// создаем структуру респонс
-	response := tasks.PatchTasksId204Response{
-		Id:     &updatedTask.ID,
-		Task:   &updatedTask.Text,
-		IsDone: &updatedTask.IsDone,
 	}
 	// Просто возвращаем респонс!
 	return response, nil

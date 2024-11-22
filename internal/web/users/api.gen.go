@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"pet_project_1_etap/internal/models"
 
 	"github.com/labstack/echo/v4"
 	"github.com/oapi-codegen/runtime"
@@ -17,7 +18,7 @@ import (
 // User defines model for User.
 type User struct {
 	Email    *string `json:"email,omitempty"`
-	Id       *uint   `json:"id,omitempty"`
+	ID       *uint   `json:"id,omitempty"`
 	Password *string `json:"password,omitempty"`
 }
 
@@ -43,10 +44,13 @@ type ServerInterface interface {
 	PostUsers(ctx echo.Context) error
 	// Delete user
 	// (DELETE /users/{id})
-	DeleteUsersId(ctx echo.Context, id int) error
+	DeleteUsersID(ctx echo.Context, id int) error
+	// Get tasks by user ID
+	// (GET /users/{id})
+	GetTasksByUserID(ctx echo.Context, id int) error
 	// Update an existing user by ID
 	// (PATCH /users/{id})
-	PatchUsersId(ctx echo.Context, id int) error
+	PatchUsersID(ctx echo.Context, id int) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -73,7 +77,7 @@ func (w *ServerInterfaceWrapper) PostUsers(ctx echo.Context) error {
 }
 
 // DeleteUsersId converts echo context to params.
-func (w *ServerInterfaceWrapper) DeleteUsersId(ctx echo.Context) error {
+func (w *ServerInterfaceWrapper) DeleteUsersID(ctx echo.Context) error {
 	var err error
 	// ------------- Path parameter "id" -------------
 	var id int
@@ -84,12 +88,28 @@ func (w *ServerInterfaceWrapper) DeleteUsersId(ctx echo.Context) error {
 	}
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.DeleteUsersId(ctx, id)
+	err = w.Handler.DeleteUsersID(ctx, id)
+	return err
+}
+
+// GetUsersId converts echo context to params.
+func (w *ServerInterfaceWrapper) GetTasksByUserID(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetTasksByUserID(ctx, id)
 	return err
 }
 
 // PatchUsersId converts echo context to params.
-func (w *ServerInterfaceWrapper) PatchUsersId(ctx echo.Context) error {
+func (w *ServerInterfaceWrapper) PatchUsersID(ctx echo.Context) error {
 	var err error
 	// ------------- Path parameter "id" -------------
 	var id int
@@ -100,7 +120,7 @@ func (w *ServerInterfaceWrapper) PatchUsersId(ctx echo.Context) error {
 	}
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.PatchUsersId(ctx, id)
+	err = w.Handler.PatchUsersID(ctx, id)
 	return err
 }
 
@@ -134,8 +154,9 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 
 	router.GET(baseURL+"/users", wrapper.GetUsers)
 	router.POST(baseURL+"/users", wrapper.PostUsers)
-	router.DELETE(baseURL+"/users/:id", wrapper.DeleteUsersId)
-	router.PATCH(baseURL+"/users/:id", wrapper.PatchUsersId)
+	router.DELETE(baseURL+"/users/:id", wrapper.DeleteUsersID)
+	router.GET(baseURL+"/users/:id/tasks", wrapper.GetTasksByUserID)
+	router.PATCH(baseURL+"/users/:id", wrapper.PatchUsersID)
 
 }
 
@@ -191,6 +212,23 @@ func (response DeleteUsersId200Response) VisitDeleteUsersIdResponse(w http.Respo
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetUsersIdRequestObject struct {
+	Id int `json:"id"`
+}
+
+type GetUsersIdResponseObject interface {
+	VisitGetUsersIdResponse(w http.ResponseWriter) error
+}
+
+type GetUsersId200JSONResponse []models.Task
+
+func (response GetUsersId200JSONResponse) VisitGetUsersIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type PatchUsersIdRequestObject struct {
 	Id   int `json:"id"`
 	Body *PatchUsersIdJSONRequestBody
@@ -205,7 +243,7 @@ type PatchUsersId200Response User
 func (response PatchUsersId200Response) VisitPatchUsersIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
-	
+
 	return json.NewEncoder(w).Encode(response)
 }
 
@@ -220,6 +258,9 @@ type StrictServerInterface interface {
 	// Delete user
 	// (DELETE /users/{id})
 	DeleteUsersID(ctx context.Context, request DeleteUsersIdRequestObject) (DeleteUsersIdResponseObject, error)
+	// Get tasks by user ID
+	// (GET /users/{id})
+	GetTasksByUserID(ctx context.Context, request GetUsersIdRequestObject) (GetUsersIdResponseObject, error)
 	// Update an existing user by ID
 	// (PATCH /users/{id})
 	PatchUsersID(ctx context.Context, request PatchUsersIdRequestObject) (PatchUsersIdResponseObject, error)
@@ -290,7 +331,7 @@ func (sh *strictHandler) PostUsers(ctx echo.Context) error {
 }
 
 // DeleteUsersId operation middleware
-func (sh *strictHandler) DeleteUsersId(ctx echo.Context, id int) error {
+func (sh *strictHandler) DeleteUsersID(ctx echo.Context, id int) error {
 	var request DeleteUsersIdRequestObject
 
 	request.Id = id
@@ -314,8 +355,33 @@ func (sh *strictHandler) DeleteUsersId(ctx echo.Context, id int) error {
 	return nil
 }
 
+// GetUsersId operation middleware
+func (sh *strictHandler) GetTasksByUserID(ctx echo.Context, id int) error {
+	var request GetUsersIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetTasksByUserID(ctx.Request().Context(), request.(GetUsersIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetUsersId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(GetUsersIdResponseObject); ok {
+		return validResponse.VisitGetUsersIdResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
 // PatchUsersId operation middleware
-func (sh *strictHandler) PatchUsersId(ctx echo.Context, id int) error {
+func (sh *strictHandler) PatchUsersID(ctx echo.Context, id int) error {
 	var request PatchUsersIdRequestObject
 
 	request.Id = id
